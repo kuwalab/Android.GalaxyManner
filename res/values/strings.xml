@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+  <string name="hello">Hello World, GalaxyMannerActivity!</string>
+  <string name="app_name">GalaxyManner</string>
+  <string name="sound_status">音の状態</string>
+  <string name="status_manner">音を\n止める</string>
+  <string name="status_normal">音を\n出す</string>
+</resources>
