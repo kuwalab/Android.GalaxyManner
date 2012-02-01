@@ -17,6 +17,8 @@ public class Widget extends AppWidgetProvider {
 	protected static final String PREFERENCES_NAME = "ORIGINAL_DATA";
 	protected static final String PREFERENCES_KEY_SOUND = "music_volume";
 
+	private static final int DEFAULT_VOLUME = 5;
+
 	public void onUpdate(Context context, AppWidgetManager am, int[] ids) {
 		RemoteViews remoteViews = new RemoteViews(context.getPackageName(),
 				R.layout.widget_main);
@@ -59,14 +61,14 @@ public class Widget extends AppWidgetProvider {
 			am.setRingerMode(AudioManager.RINGER_MODE_NORMAL);
 			SharedPreferences pref = context.getSharedPreferences(
 					PREFERENCES_NAME, Context.MODE_PRIVATE);
-			int volume = pref.getInt(PREFERENCES_KEY_SOUND, 5);
+			int volume = pref.getInt(PREFERENCES_KEY_SOUND, DEFAULT_VOLUME);
 			am.setStreamVolume(AudioManager.STREAM_MUSIC, volume, 0);
+			refresh(context, false);
 		} else {
 			am.setRingerMode(AudioManager.RINGER_MODE_VIBRATE);
 			am.setStreamVolume(AudioManager.STREAM_MUSIC, 0, 0);
+			refresh(context, true);
 		}
-
-		refresh(context);
 	}
 
 	/**
@@ -75,9 +77,19 @@ public class Widget extends AppWidgetProvider {
 	 * @param context
 	 */
 	private void refresh(Context context) {
+		refresh(context, isAllStop(context));
+	}
+
+	/**
+	 * ウィジェット全ての状態を最新の状態に更新する。
+	 * 
+	 * @param context
+	 * @param stauts
+	 */
+	private void refresh(Context context, boolean status) {
 		RemoteViews remoteViews = new RemoteViews(context.getPackageName(),
 				R.layout.widget_main);
-		if (isAllStop(context)) {
+		if (status) {
 			remoteViews.setTextViewText(R.id.mannerButton,
 					context.getString(R.string.status_normal));
 			remoteViews.setImageViewResource(R.id.statusIcon,
@@ -103,12 +115,11 @@ public class Widget extends AppWidgetProvider {
 		AudioManager am = (AudioManager) context
 				.getSystemService(Context.AUDIO_SERVICE);
 		int volume = am.getStreamVolume(AudioManager.STREAM_MUSIC);
-		if (am.getRingerMode() == AudioManager.RINGER_MODE_VIBRATE) {
-			if (volume == 0) {
-				return true;
-			}
+		if (am.getRingerMode() == AudioManager.RINGER_MODE_VIBRATE
+				&& volume == 0) {
+			return true;
 		}
-		// VIBRATEでないときの音楽のボリュームを保管する。
+		// 音楽のボリュームを保管する。
 		SharedPreferences pref = context.getSharedPreferences(PREFERENCES_NAME,
 				Context.MODE_PRIVATE);
 		Editor edit = pref.edit();
